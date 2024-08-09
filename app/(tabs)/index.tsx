@@ -1,70 +1,111 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { ActivityIndicator, FlatList, StatusBar, Text, View } from "react-native";
+import SchoolCard from "@/components/School/SchoolCard";
+import Layout from "@/components/ui/Layout";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import Schools from "@/services/schools";
+import { useQuery } from "react-query";
+import { School } from "@/types";
+import tw from "twrnc";
+import Input from "@/components/form/Input";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import Feather from "@expo/vector-icons/Feather";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const index = () => {
+  const controller = useRef<AbortController | null>(null);
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const { data, isLoading, isFetching } = useQuery<School[]>({
+    queryKey: ["schools"],
+    queryFn: Schools.getAll,
+  });
+
+  const [allSchools, setAllSchools] = useState<Array<School> | undefined>(data);
+  const [schoolsFiltered, setSchoolsFiltered] = useState<Array<School> | undefined>(data);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+
+  const renderSchools = useCallback(
+    ({ item }: { item: School }) => {
+      return <SchoolCard item={item} />;
+    },
+    [data]
   );
-}
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+  /**
+   * This function will cancel the previous request if it hasn't been finish and proceed with the newer one by getting the schools through their region id.
+   *
+   * @param regionId this is the ```text``` property coming from the React TextInput Component method ```onChangeText```
+   */
+  const handleSearchSchool = async (regionId: string) => {
+    try {
+      controller.current?.abort();
+      // if the regionId is empty it will set the schools array to all the schools
+      if (!regionId || regionId.length < 1) {
+        setSchoolsFiltered(allSchools);
+        return;
+      }
+
+      const signal = controller.current?.signal;
+
+      if (signal) {
+        setIsSearchLoading(true);
+        const response = await Schools.getById(regionId, signal);
+        setSchoolsFiltered(response);
+      }
+    } catch (err: any) {
+      console.error(err.message);
+    } finally {
+      setIsSearchLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setSchoolsFiltered(data);
+    if (data?.length === 16371) setAllSchools(data);
+  }, [data]);
+
+  useEffect(() => {
+    controller.current = new AbortController();
+  }, []);
+
+  return (
+    <Layout>
+      <Text style={tw`text-2xl mx-auto flex-row font-medium`}>Centros Educativos</Text>
+      <View style={tw`w-11/12 mx-auto`}>
+        <Input
+          onChangeText={handleSearchSchool}
+          placeholder="Busca el centro por su regional"
+          Icon={<Feather name="search" size={24} style={tw`text-gray-300`} />}
+        />
+      </View>
+
+      <View style={tw`w-full h-[0.3] bg-slate-200 mt-6 mx-auto`}></View>
+      <View>
+        {(!isLoading || !isFetching) && (
+          <FlatList
+            data={schoolsFiltered ?? []}
+            maxToRenderPerBatch={4}
+            initialNumToRender={2}
+            ListHeaderComponent={() => <View style={tw`h-6`} />}
+            ListFooterComponent={() => <View style={tw`h-10`} />}
+            windowSize={4}
+            showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View style={tw`h-4`} />}
+            renderItem={({ item }) => renderSchools({ item })}
+            keyExtractor={(item) => item.idx}
+          />
+        )}
+      </View>
+
+      {(isLoading || isFetching || isSearchLoading) && (
+        <View
+          style={tw`mx-auto w-80 absolute top-80 left-10 bg-white justify-center p-8 gap-6 
+            rounded-md shadow-lg shadow-slate-400 border-[0.1] border-gray-200`}
+        >
+          <ActivityIndicator size={40} />
+          <Text style={tw`text-center text-sm font-medium`}>Cargando Centros Educativos...</Text>
+        </View>
+      )}
+    </Layout>
+  );
+};
+
+export default index;

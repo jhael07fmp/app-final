@@ -1,37 +1,32 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import Feather from "@expo/vector-icons/Feather";
+import { TabIconFn } from "@/utils/Routing";
+import { Tabs } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { TabBarIconProps } from "@/types";
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+const _layout = () => {
+  const tabOptions = (Icon: React.ElementType, name: string, size: number) => ({
+    title: "",
+    tabBarIcon: (props: TabBarIconProps) => TabIconFn(Icon, name, size, props),
+    headerShown: false,
+  });
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
-          ),
-        }}
-      />
+        tabBarStyle: {
+          height: 60,
+          padding: 14,
+        },
+      }}
+    >
+      <Tabs.Screen name="index" options={tabOptions(FontAwesome6, "school", 25)} />
+      <Tabs.Screen name="news" options={tabOptions(FontAwesome, "newspaper-o", 28)} />
+      <Tabs.Screen name="settings" options={tabOptions(Ionicons, "settings-outline", 29)} />
     </Tabs>
   );
-}
+};
+
+export default _layout;
