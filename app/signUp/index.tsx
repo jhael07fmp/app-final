@@ -7,9 +7,32 @@ import React, { useCallback, useState } from "react";
 import tw from "twrnc";
 import { Auth } from "@/services/Auth";
 import RegisterFormInputs from "@/components/SignUp/RegisterFormInputs";
+import { useMutation } from "react-query";
 
 const index = () => {
   const [registerForm, setRegisterForm] = useState<Register>(formInitialState);
+
+  const handleOnPressRegister = useCallback(async () => {
+    try {
+      // validates that all inputs are filled
+      const inputs = Object.entries(registerForm);
+
+      for (const [key, value] of inputs) {
+        if (!value || value === " ")
+          throw Error(`${keyTranslation[key]} es obligatorio.`);
+      }
+
+      const result = await Auth.reigster(registerForm);
+      console.log(result);
+    } catch (err: any) {
+      alert(err.message);
+    }
+  }, [registerForm]);
+
+  const { mutate, isLoading } = useMutation({
+    mutationKey: ["register"],
+    mutationFn: handleOnPressRegister,
+  });
 
   const inputs: InputProps[] = [
     {
@@ -46,23 +69,6 @@ const index = () => {
     },
   ];
 
-  const handleOnPressRegister = useCallback(async () => {
-    try {
-      // validates that all inputs are filled
-      const inputs = Object.entries(registerForm);
-
-      for (const [key, value] of inputs) {
-        if (!value || value === " ")
-          throw Error(`${keyTranslation[key]} es obligatorio.`);
-      }
-
-      const result = await Auth.reigster(registerForm);
-      console.log(result);
-    } catch (err: any) {
-      alert(err.message);
-    }
-  }, [registerForm]);
-
   return (
     <Layout>
       <BackButton />
@@ -70,7 +76,12 @@ const index = () => {
       <View style={tw`w-11/12 mx-auto flex-row flex-wrap gap-x-4`}>
         <RegisterFormInputs inputs={inputs} setRegisterForm={setRegisterForm} />
         <View style={tw`mx-auto w-full mt-8`}>
-          <MainButton title="Registrarse" onPress={handleOnPressRegister} />
+          <MainButton
+            isLoading={isLoading}
+            disabled={isLoading}
+            title="Registrarse"
+            onPress={() => mutate()}
+          />
         </View>
       </View>
     </Layout>
