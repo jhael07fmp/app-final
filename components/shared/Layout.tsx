@@ -1,7 +1,7 @@
-import React, { ReactNode } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import tw from "twrnc";
 import { StatusBar } from "expo-status-bar";
+import React, { ReactNode } from "react";
+import tw from "twrnc";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (

@@ -1,8 +1,8 @@
-import { Text, TextInput, TextInputProps, View } from "react-native";
 import { InputProps } from "@/types";
+import { Text, TextInput, View } from "react-native";
 import tw from "twrnc";
 
-const Input = ({ label, Icon, ...rest }: InputProps & TextInputProps) => {
+const InputComponent = ({ label, Icon, ...rest }: InputProps) => {
   return (
     <View style={tw`gap-4 flex-col w-full relative`}>
       <Text>{label}</Text>
@@ -15,4 +15,4 @@ const Input = ({ label, Icon, ...rest }: InputProps & TextInputProps) => {
   );
 };
 
-export default Input;
+export default InputComponent;

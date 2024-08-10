@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
+import { TextInputProps } from "react-native";
 
 type TabBarIconProps = { focused: boolean; color: string; size: number };
 
-type InputProps = {
+type InputBaseProps = {
   label?: string;
   Icon?: ReactNode;
 };
@@ -17,4 +18,37 @@ type School = {
   d_dmunicipal: string;
 };
 
-export { type TabBarIconProps, type InputProps, type School };
+type News = {
+  title: string;
+  image: string;
+  description: string;
+  content: string;
+  link: string;
+};
+
+type MenuOption = {
+  id: number;
+  title: string;
+  isSignIn: boolean;
+  route: string;
+};
+
+type InputProps = InputBaseProps & TextInputProps;
+
+type Register = {
+  name: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  birthdate: string;
+  personalId: string;
+  password: string;
+};
+export {
+  type Register,
+  type InputProps,
+  type TabBarIconProps,
+  type School,
+  type News,
+  type MenuOption,
+};

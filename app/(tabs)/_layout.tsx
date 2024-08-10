@@ -22,9 +22,21 @@ const _layout = () => {
         },
       }}
     >
-      <Tabs.Screen name="index" options={tabOptions(FontAwesome6, "school", 25)} />
-      <Tabs.Screen name="news" options={tabOptions(FontAwesome, "newspaper-o", 28)} />
-      <Tabs.Screen name="settings" options={tabOptions(Ionicons, "settings-outline", 29)} />
+      <Tabs.Screen
+        name="index"
+        options={tabOptions(FontAwesome6, "school", 25)}
+      />
+      <Tabs.Screen
+        name="news"
+        options={tabOptions(FontAwesome, "newspaper-o", 28)}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          ...tabOptions(Ionicons, "settings-outline", 29),
+          headerTransparent: true,
+        }}
+      />
     </Tabs>
   );
 };

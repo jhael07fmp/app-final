@@ -1,14 +1,20 @@
-import { ActivityIndicator, FlatList, StatusBar, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StatusBar,
+  Text,
+  View,
+} from "react-native";
 import SchoolCard from "@/components/School/SchoolCard";
-import Layout from "@/components/ui/Layout";
+import Layout from "@/components/shared/Layout";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Schools from "@/services/schools";
 import { useQuery } from "react-query";
 import { School } from "@/types";
 import tw from "twrnc";
-import Input from "@/components/form/Input";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import InputComponent from "@/components/form/Input";
 import Feather from "@expo/vector-icons/Feather";
+import Title from "@/components/shared/Title";
 
 const index = () => {
   const controller = useRef<AbortController | null>(null);
@@ -16,10 +22,13 @@ const index = () => {
   const { data, isLoading, isFetching } = useQuery<School[]>({
     queryKey: ["schools"],
     queryFn: Schools.getAll,
+    staleTime: Infinity,
   });
 
   const [allSchools, setAllSchools] = useState<Array<School> | undefined>(data);
-  const [schoolsFiltered, setSchoolsFiltered] = useState<Array<School> | undefined>(data);
+  const [schoolsFiltered, setSchoolsFiltered] = useState<
+    Array<School> | undefined
+  >(data);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
 
   const renderSchools = useCallback(
@@ -36,13 +45,13 @@ const index = () => {
    */
   const handleSearchSchool = async (regionId: string) => {
     try {
-      controller.current?.abort();
       // if the regionId is empty it will set the schools array to all the schools
       if (!regionId || regionId.length < 1) {
         setSchoolsFiltered(allSchools);
         return;
       }
 
+      controller.current = new AbortController();
       const signal = controller.current?.signal;
 
       if (signal) {
@@ -51,7 +60,7 @@ const index = () => {
         setSchoolsFiltered(response);
       }
     } catch (err: any) {
-      console.error(err.message);
+      // console.error(err.message);
     } finally {
       setIsSearchLoading(false);
     }
@@ -66,12 +75,19 @@ const index = () => {
     controller.current = new AbortController();
   }, []);
 
+  const handleOnSearch = async (txt: string) => {
+    controller.current?.abort();
+    controller.current = new AbortController();
+    await handleSearchSchool(txt);
+  };
+
   return (
     <Layout>
-      <Text style={tw`text-2xl mx-auto flex-row font-medium`}>Centros Educativos</Text>
+      <Title>Centros Educativos</Title>
+
       <View style={tw`w-11/12 mx-auto`}>
-        <Input
-          onChangeText={handleSearchSchool}
+        <InputComponent
+          onChangeText={handleOnSearch}
           placeholder="Busca el centro por su regional"
           Icon={<Feather name="search" size={24} style={tw`text-gray-300`} />}
         />
@@ -101,7 +117,9 @@ const index = () => {
             rounded-md shadow-lg shadow-slate-400 border-[0.1] border-gray-200`}
         >
           <ActivityIndicator size={40} />
-          <Text style={tw`text-center text-sm font-medium`}>Cargando Centros Educativos...</Text>
+          <Text style={tw`text-center text-sm font-medium`}>
+            Cargando Centros Educativos...
+          </Text>
         </View>
       )}
     </Layout>
