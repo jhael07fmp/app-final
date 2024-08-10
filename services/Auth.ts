@@ -14,7 +14,7 @@ export namespace Auth {
     const { personalId, password, name, lastname, email, phone, birthdate } =
       props;
 
-    const searchParams = new URLSearchParams({
+    const body = {
       cedula: personalId,
       clave: password,
       nombre: name,
@@ -22,10 +22,10 @@ export namespace Auth {
       email: email,
       phone: phone,
       fecha_nacimiento: birthdate,
-    }).toString();
+    };
 
-    const url = `def/registro.php?${searchParams}`;
+    const url = `def/registro.php`;
 
-    return Methods.get(baseApi(url));
+    return Methods.post(baseApi(url), body);
   };
 }
